@@ -17,8 +17,7 @@ public class Trama {
 	public final static byte INICIO_ARCHIVO = 6;
 	public final static byte FIN_ARCHIVO = 7;
 	public final static byte FIN_CONEXION=8;
-	public final static String CESAR= "CESAR";
-	public final static String ATBASH= "ATBASH";
+
 	
 	private Byte flagInicio;
 	private Byte control;
@@ -117,10 +116,19 @@ public class Trama {
 					validacion[i]=checkSum[i-datos.length];
 				}
 			}
+    		
+    		BigInteger b= new BigInteger(validacion);
+    		if(b.compareTo(new BigInteger("0"))<0){
+    			return true;
+    		}
+    		System.out.println("el big integer es: "+b);
     		Integer resultado= crc16(validacion);
     		if(resultado==0){
     			return true;
     		}
+    		
+    		
+    System.out.println("ES NO VALIDA RESIDUO= "+resultado+ " TAM CRC" +checkSum.length);
     		return false;
     	}
     	//verificar CRC
@@ -182,8 +190,7 @@ public class Trama {
 
 			
 		checkSum= new Byte[2];
-		checkSum[0]=INICIO_CONEXION;////////////////////////////
-		checkSum[1]= INICIO_CONEXION;
+		checkSum = btoB(getCRCAsByteArray(crc16(Btob(datos))));
 		flagFin= FLAG;
 	}
 	
@@ -203,9 +210,9 @@ public class Trama {
 		return miB;
 	}
 	
-		public boolean esDefinirCifrado(){
+	public boolean esDefinirCifrado(){
 		String hola= new  String(Btob(datos));
-		if(hola.equals(CESAR)||hola.equals(ATBASH)){
+		if(hola.equals(Servidor.CESAR)||hola.equals(Servidor.ATBASH)){
 			return true;
 		}
 		return false;
@@ -213,7 +220,7 @@ public class Trama {
 	
 	public boolean esDefinirOperacion(){
 		String hola= new  String(Btob(datos));
-		if(hola.equals("C")||hola.equals("D")){
+		if(hola.equals("c")||hola.equals("d")){
 			return true;
 		}
 		return false;

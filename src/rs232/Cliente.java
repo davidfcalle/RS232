@@ -21,16 +21,23 @@ public class Cliente {
 	public static Trama enviarMensaje(Trama miTrama)throws Exception{
 		boolean confirmacion = false;
 		Trama tTemp = null;
-
+		Trama copia= miTrama;
 		//Ver y modificar informacion de la trama
-		miTrama = informacionTrama(miTrama);
-
+		Trama miTrama_modificada = informacionTrama(miTrama);
+        int i=0;
 		while(!confirmacion){
 			System.out.print("Envio: ");
 			miTrama.imprimirTipo();
 			//System.out.println("A");
 			System.out.print("Recibo: ");
+			if(i==0){
+				
+				miTrama=miTrama_modificada;
+			}else{
+				miTrama=copia;
+			}
 			enviar(miTrama);
+			i++;
 			tTemp = escuchar();
 			//ConfirmacionPositiva
 			if(tTemp != null){
@@ -45,10 +52,17 @@ public class Cliente {
 		return tTemp;
 	}
 
-	private static Trama informacionTrama(Trama miTrama) {
-
+private static Trama informacionTrama(Trama miTrama2) {
+		
+		Trama miTrama=null;
+		if(miTrama2.getDatos().length>0 && miTrama2.getControl()==Trama.INFORMACION){
+		miTrama= new Trama();
+		miTrama.crearTramaInformacion(new String(Trama.Btob(miTrama2.getDatos())));
+		}else{
+			miTrama= miTrama2;
+		}
 		int longitud = miTrama.getFlagInicio().SIZE + miTrama.getControl().SIZE + (miTrama.getDatos().length*8) + (miTrama.getCheckSum().length*8)+miTrama.getFlagFin().SIZE;
-
+		
 		imprimirTrama(miTrama);
 
 		System.out.println("DESEA MODIFICAR LA TRAMA S/N");
@@ -73,7 +87,6 @@ public class Cliente {
 		waitForKeypress.nextLine (); 
 		return miTrama;
 	}
-
 	private static Trama modificarTrama(Trama miTrama, int bitModificar) {
 
 		int longitud = miTrama.getFlagInicio().SIZE + miTrama.getControl().SIZE + (miTrama.getDatos().length*8) + (miTrama.getCheckSum().length*8)+miTrama.getFlagFin().SIZE;
@@ -409,7 +422,7 @@ public class Cliente {
 
 		int cantidadTramas = numBytes/(Trama.TAMANO_MAXIMO_TRAMA-1);
 
-		if(numBytes%Trama.TAMANO_MAXIMO_TRAMA != 0){
+		if(numBytes%(Trama.TAMANO_MAXIMO_TRAMA-1) != 0){
 			cantidadTramas++;
 		}
 
@@ -497,14 +510,15 @@ public class Cliente {
 					enviarMensaje(miTrama);
 					break;
 				case 2:
-					System.out.println("Escriba C para cifrar, D para descifrar: ");
+					System.out.println("Escriba c para cifrar, d para descifrar: ");
 					CD = entrada.next();
+					CD= CD.toLowerCase();
 					//CD = "C";
-					if(CD.equals("C")){
-						miTrama.crearTramaInformacion("C");
+					if(CD.equals("c")){
+						miTrama.crearTramaInformacion("c");
 					}else{
-						if(CD.equals("D"))
-							miTrama.crearTramaInformacion("D");
+						if(CD.equals("d"))
+							miTrama.crearTramaInformacion("d");
 						else{
 							System.out.println("Error Fatal");
 						}
@@ -515,7 +529,7 @@ public class Cliente {
 				case 3:
 					miTrama.crearTramaInformacion("Tipos");
 					enviarMensaje(miTrama);
-					Trama miT;
+
 					miTrama=escucharMensaje();
 
 
@@ -529,21 +543,21 @@ public class Cliente {
 					break;
 				case 4:
 
-					System.out.println("Escriba CESAR para cesar, ATBASH para atbash: ");
+					System.out.println("Escriba Cesar, Atbash: ");
 					CA = entrada.next();
 					//CA = "ATBASH";
-					if(CA.equals("CESAR")){
-						miTrama.crearTramaInformacion("CESAR");
+					if(CA.equals(Servidor.CESAR)){
+						miTrama.crearTramaInformacion(Servidor.CESAR);
 					}else{
-						if(CA.equals("ATBASH"))
-							miTrama.crearTramaInformacion("ATBASH");
+						if(CA.equals(Servidor.ATBASH))
+							miTrama.crearTramaInformacion(Servidor.ATBASH);
 						else{
 							System.out.println("Error Fatal");
 						}
 					}
 					enviarMensaje(miTrama);
 					Thread.sleep(500);
-					if(CA.equals("CESAR")){
+					if(CA.equals(Servidor.CESAR)){
 						miTrama = escucharMensaje();
 					}
 
@@ -555,7 +569,7 @@ public class Cliente {
 					}
 					String miST = new String(arrayT);
 
-					if(miST.equalsIgnoreCase("DIGITE_CLAVE")){
+					if(miST.equalsIgnoreCase("dc")){
 						System.out.println("DIGITE CLAVE");
 						miClave = entrada.nextInt();
 						miTrama.crearTramaInformacion(miClave+"");

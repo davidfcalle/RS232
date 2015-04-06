@@ -16,8 +16,8 @@ import javax.naming.LimitExceededException;
 public class Servidor { 
 	
 	
-	public final static String CESAR= "CESAR";
-	public final static String ATBASH= "ATBASH";
+	public final static String CESAR= "Cesar";
+	public final static String ATBASH= "Atb";
 	
 
 	
@@ -97,6 +97,7 @@ public class Servidor {
 		while(!confirmacion){
 			//System.out.println("A");
 			enviar(miTrama);
+			//System.out.println("ENTRA y envio "+new String(miTrama.convertirAByteArray()));
 			tTemp = escuchar();
 			if(tTemp!=null&&tTemp.getControl()==Trama.CONFIRMACION_POSITIVA_CERO&&tTemp.esValida()){
 				confirmacion = true;
@@ -285,14 +286,16 @@ public class Servidor {
 				
 			contectado=true;
 			while(contectado){
-				//System.out.println("Esperando Instruccion");
-				
+				//System.out.println("EsperandoN Instruccion");
+				System.out.println("Escuchando");
 				Trama mi_trama=escucharMensaje();
+				System.out.println("Escuchéñ");
 				if(mi_trama.esDarTipos()){
 					
 					//System.out.println("Me llega una trama de dar tipos");
+					System.out.println("Entra");
 			    Trama recepcion= new Trama();
-				recepcion.crearTramaInformacion(ATBASH+" "+CESAR);;
+				recepcion.crearTramaInformacion(ATBASH+" "+CESAR);
 				//Thread.sleep(1000);
 				enviarMensaje(recepcion);
 				}else if(mi_trama.esDefinirOperacion()){
@@ -309,21 +312,26 @@ public class Servidor {
 					
 					if(cifrado.equals(CESAR)){
 						//deme la clave
+							System.out.println("LALALA");
 						  Trama recepcion= new Trama();
-						  recepcion.crearTramaInformacion("DIGITE_CLAVE");;
+						  recepcion.crearTramaInformacion("dc");;
 						  Thread.sleep(1000);
-						  System.out.print("envio ");
+						  
 						  enviarMensaje(recepcion);
-						  recepcion.imprimirTipo();
+						  //recepcion.imprimirTipo();
+					
 						  recepcion= escucharMensaje();
+					
 						
 						  responde = new String(recepcion.Btob(recepcion.getDatos()));
 						  clave= Integer.parseInt(responde);
 						  
 					}
+					
 				}else if(mi_trama.tieneDatos()&&mi_trama.esArchivo() ){
 					//es un trama de archivo
 				
+					System.out.println("ME PIDE CODIIII");
 					String mensaje="";
 					Trama archivo= mi_trama;
 				
@@ -345,13 +353,13 @@ public class Servidor {
 					//ya me llegï¿½ el mensaje completo y lo debo decodificar
 					//mensaje=mensaje.toUpperCase();
 					String mensajeCodificado="";
-					if(cifrado.equals(ATBASH)&&operacion.equals("C")){
+					if(cifrado.equals(ATBASH)&&operacion.equals("c")){
 				
 						mensajeCodificado=descifrarAtbash(mensaje);
-					}else if(cifrado.equals(ATBASH)&&operacion.equals("D")){
+					}else if(cifrado.equals(ATBASH)&&operacion.equals("d")){
 					
 						mensajeCodificado=descifrarAtbash(mensaje);
-					}else if(cifrado.equals(CESAR)&&operacion.equals("D")){
+					}else if(cifrado.equals(CESAR)&&operacion.equals("c")){
 					
 						mensajeCodificado=descifrarCesar(mensaje, clave);
 					}else{
@@ -360,6 +368,8 @@ public class Servidor {
 						
 					}
 					enviarInformacionArchivo(mensajeCodificado);
+				}else{
+					System.out.println("NO llega trama de tipo valido");
 				}
 				
 			}
@@ -376,10 +386,17 @@ public class Servidor {
 	}
 	
 	}
-	private static Trama informacionTrama(Trama miTrama) {
-
+private static Trama informacionTrama(Trama miTrama2) {
+		
+		Trama miTrama=null;
+		if(miTrama2.getDatos().length>0 && miTrama2.getControl()==Trama.INFORMACION){
+		miTrama= new Trama();
+		miTrama.crearTramaInformacion(new String(Trama.Btob(miTrama2.getDatos())));
+		}else{
+			miTrama= miTrama2;
+		}
 		int longitud = miTrama.getFlagInicio().SIZE + miTrama.getControl().SIZE + (miTrama.getDatos().length*8) + (miTrama.getCheckSum().length*8)+miTrama.getFlagFin().SIZE;
-
+		
 		imprimirTrama(miTrama);
 
 		System.out.println("DESEA MODIFICAR LA TRAMA S/N");
